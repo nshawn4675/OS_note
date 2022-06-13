@@ -1,0 +1,272 @@
+## CH3 OS Development
+- OS services
+- OS important components
+- OS structure types
+- System call and parameter passing
+- Virtual machine
+- Policy and Mechanism
+
+## OS services  
+- Program execution
+    - The OS can load at least a program into memory to run, and terminate it properly.
+- I/O operation
+    - Because users can't do direct I/O, so a running program might request I/O services via interfaces which OS offered.
+- Handling of file system
+    - Program can create, read, write and delete files.
+- Communication
+    - Process may use the data from another process.
+    - shared memory
+        - Communication on the same machine.
+    - message passing
+        - Communication on different machine via network.
+- Fault detection
+    - OS has to detect fault frequently, these errors may be found in:
+        - CPU and memory hardware
+            - memory / computer malfunction.
+        - I/O-Device
+            - Printer lacks of paper, tap driver transaction error.
+        - User program
+            - overflow, illegal memory access, occupy CPU for a long time.
+    - OS should handle each types of error properly to ensure correct operation result and consistency.
+- Resources allocation
+    - OS manages each types of resource when multi-user/task are running simultaneously.
+    - e.g., CPU scheduling for CPU utilization (CPU speed, # process, available registers, etc)
+    - Other than that, some programs are responsible for resource allocation of peripheral devices like plotters, modems, etc.
+- Accounting
+    - OS records user resource usage for charging, or application statistics to improve performance in the future.
+- Protection
+    - Process should run independently (shouldn't bother other process or OS), the protection involves the correctness of system call parameter and system resource access.
+    - OS security is important too, e.g., password for user to access any resource and external I/O-devices like modem and internet interface.
+    - Any unexpected disconnection should be logged.
+
+## OS important components
+- Memory management
+    - Manage/Monitor the active memory area status.
+    - Determines which programs are loaded into memory when enough memory is available.
+    - Allocate/Recycle memory space based on needs.
+- Process management
+    - Create, delete user/system process.
+    - Suspend, resume process.
+    - Synchronization for process.
+    - Communication for process.
+    - Deadlock handle.
+- Secondary storage management
+    - Management on available space.
+    - Storage and file space allocation.
+    - Disk scheduling.
+- I/O system management
+    - Buffer: fast access to memory system.
+    - Universal device driver interface.
+    - Specific device driver.
+    - Good I/O operation performance is done by the collaboration of OS, interrupt and device driver.
+- File management
+    - Create, delete file.
+    - Create, delete directory.
+    - Basic functions to handle files and directory.
+    - Mapping files to storage device.
+    - Backup files to non-volatile storage.
+- Protection
+    - CPU protection
+    - Memory protection
+    - I/O protection
+    - File protection
+    - Other resource protection
+- Networking
+- Command interpreter system
+
+## OS structure types
+- Simple structure
+    - Define
+        - Not divided into modules, its interface and level of functionality are not well seperated.
+    - Exampples: MS-DOS
+- Non-simple structure
+    - Limited by hardware functionality
+    - Examples: UNIX
+    - The original UNIX has limited functionality
+    - OS includes 2 peperate parts
+        - System programs
+        - Kernel
+    - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/UNIX_os_struct.png?raw=true)
+        - Shell is the user interface of UNIX.
+    - Shell is seperated from kernel.
+    - Kernel can be customized.
+- Layered approach
+    - It is just a concept of design rule.
+    - Top-down divided.
+    - Rule: Upper layer can call lower layer, but lower layer can't call upper layer.
+    - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/layered_struct.png?raw=true)
+    - Bottom-up testing.
+    - Pros
+        - Simplify system design complexity.
+        - Each modules can be developed simultaneously.
+        - Easy to test, maintain.
+    - Cons
+        - Layer define is not easy.
+            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/layer_3_1.png?raw=true)
+        - The more layer is has, the poor performance it got.
+            - function called layer by layer and returned layer by layer.
+            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/multi_layer.png?raw=true)
+- Microkernel
+    - Examples: CMU-Mach OS
+    - Define
+        - Remove non-essential services from kernel, let the non-essential services run on user site as system software or user process, so that the kernel can be smaller.
+        - kernel service
+            - Process management
+            - Memory management (exclude virtual memory)
+            - Process communication (only message passing)
+    - Pros
+        - Easier to extend a microkernel
+            - If new features are going to add into OS, then update user site only, not kernel. Kernel don't need to be modified frequently, so the service update is easy.
+        - Easier to port OS to new architecture
+            - Due to the less kernel serivce which microkernel has, so it can be porting to different hardware arcitecture easily.
+        - More reliable and secure (less code is running)
+            - Because most of the service is running on user site, if some services fail, they are just user processes, they don't affect other processes or kernel.
+    - Cons
+        - System performance is poor.
+            - Lots of message passing between user site and kernel site.
+    - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/microkernel.png?raw=true)
+- Modules
+    - Many modern OS implement loadable kernel modules.
+    - Object-oriented approach.
+    - Each core component is seperated.
+    - They talk to each other over known interface.
+    - Each module is loadable as needed within the kernel.
+    - Similar with layer, but more complex.
+    - examples: Linux, Solaris, etc.
+    - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/modules.png?raw=true)
+- Hybrid system
+    - All the modern OS can't be classified into one of the OS types mentioned before.
+    - Most of them are mixed together.
+    - eamples:
+        - Linux, Solaris are monolithtic kernel + modular for dynamic function loading.
+        - Most of Windows OS are monolithtic, but some of them are customized by adding microkernel into it.
+        - Apple Mac-OS
+            - Cocoa: Programming environment
+            - Mach: microkernel
+            - BSD UNIX parts: monolithtic
+            - kernel extension: dynamic loadable modules
+            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/mac_os.png?raw=true)
+        - IOS
+            - Cocoa Touch: Objective-C API for developing APPs.
+            - Media services: Layer of graphic, audio, video.
+            - Core services: Provide cloud computing, database.
+            - Core OS: Based on Mac OS X kernel.
+            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/ios.png?raw=true)
+        - Android
+            - Developed by Google mostly.
+            - Based on Linux kernel but modified.
+            - Runtime environment includes core set of libraries and Dalvik VM.
+            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/android.png?raw=true)
+
+- System call and parameter passing
+    - Define
+        - System call is the communication interface between user process and OS. When a process needs OS to offer services, it will request a trap which contains system call ID and params to notify OS, after OS receivs the trap, it then execute corresponding system call, and returns results to user process after finishing the job.
+    - System call types
+        - Process control
+            - End, abort.
+            - Load, execution.
+            - Create, terminate.
+            - Get/Set process attributes.
+            - Wait for a period of time.
+            - Wait for event, report event.
+            - Memory allocation, release memory.
+        - File operation
+            - Create, delete.
+            - Open close.
+            - Read, write, relocate.
+            - Get/Set file attributes.
+        - Device operation
+            - Register, release.
+            - Read, write, relocate.
+            - Get/Set device attributes.
+            - Logic connect, eject.
+        - Information maintain
+            - Get/Set time & date.
+            - Get/Set system data.
+            - Get/Set process, file, device attributes.
+        - Process communication
+            - Establish, delete comm connection.
+            - Send, receive msg.
+            - Send status info.
+            - Connect, eject device.
+            - OS only offers "message passing" normally.
+    - System call parameter passing
+        - by register value
+            - Pros
+                - Access speed is fast. (no memory access)
+            - Cons
+                - Numbers of register is limited.
+        - by parameter table in memory
+            - Pros
+                - Suite for large amount of parameters.
+            - Cons
+                - Access speed is slow.
+        - by stack
+            - Pros
+                - Suite for large amout of parameters, easy to use.
+            - Cons
+                - Stack size needs to be large enough to prevent stack overflow.
+
+- Virtual Machine
+    - Define
+        - Use software technology to simulates a abstract machine which has the same hardware as lower level hardware.
+        - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/virtual_machine.png?raw=true)
+    - Terms
+        - Host
+            - Underlying hardware or origin OS.
+        - Guest
+            - Process provided with virtual copy of the host, usually an OS.
+        - VMM (Virtual Machine Manager / Hypervisor)
+            - Creates and runs virtual machine by providing interface that indentical to the host.
+    - virtual machine VMM types
+        - Type-0 hypervisor
+            - Hardware-based solution that provides support for VM creation and management via firmware.
+            - examples
+                - IBM LPARs, Oracle LDOMs.
+        - Type-1 hypervisor
+            - OS-like software
+                - examples
+                    - VMware ESX, Joyeut SmartOS, Citrix XenServer.
+            - General purpose OS that provides VMM services
+                - examples
+                    - MS-windows server with hyperV, RedHat Linux KVM.
+        - Type-2 hypervisor
+            - Applications that run on standard OS but provide VMM feature to guest OS.
+            - example
+                - VMware workstation and fusion, parallel desktop, Oracle virtualbox.
+        - other
+            - Paravirtualization
+                - Define
+                    - Present guest OS with system similar but not identical to the host hardware.
+                - Guest OS must be modified to run on paravirtualization hardware.
+                - Guest OS is modified to work in cooperation with the VMM to optimize performance.
+                - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/paravirtualization.png?raw=true)
+            - Emulator
+                - Allow applications written for one hardware environment to run on a very different hardware environment, such as different type of CPU.
+                - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/emulator.png?raw=true)
+            - Programming environment virtualization
+                - This VMM don't virtualize real hardware, but instead create an optimized virtual system.
+                - examples
+                    - Oracle Java virtual machine, MS .NET.
+                        - JVM is a specification includes three parts
+                            - class loader
+                            - class verifier
+                            - Java interpreter
+                            - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/jvm.png?raw=true)
+            - Application containment
+                - Not virtualization at all but rather provides virtualization-like features by segregating application from OS, making them more secure, manageable.
+                - examples
+                    - Solaris zones, BSD Jails, IBM AIX WPARS.
+                - ![](https://github.com/nshawn4675/OS_note/blob/master/_asset/CH3/app_containment.png?raw=true)
+        - Virtual machine pros & cons
+            - Pros
+                - Useful for developing, testing OS
+                    - Becuase the stability of OS which is under development is low, it may cause fatal erros to ruin the VM, but the VM runs in user mode so that it is just a user process to be terminated, it will not affect other process or system.
+                - There can be multiple VM to be installed on the same host hardware to achieve multi-OS. (cost saving)
+                - Protect from each other
+                    - The host and VMs are seperated to each other, e.g., a virus is less likely to spread.
+                - Support cloud computing
+                    - Consolidation of many low-resource use system onto fewer busier system.
+                    - Freeze, suspend rugging and clone VM.
+                    - Live migration
+                        - Move a running VM from one host to another.
